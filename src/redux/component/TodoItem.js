@@ -1,73 +1,74 @@
-import React, { useState } from 'react'
-import { useDispatch } from 'react-redux'
+import React, { useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { deleteTodo, toggleComplete, editTodo } from '../../store/slice/todo-slice';
+import { BsCheck2, BsXLg } from 'react-icons/bs';
+import { BsFillPencilFill, BsFillTrashFill } from 'react-icons/bs';
 
-import { deleteTodo, toggleComplete ,editTodo} from '../../store/slice/todo-slice';
-import {FcApprove, FcDisapprove} from "react-icons/fc";
-import {BsFillPencilFill ,BsFillTrashFill } from "react-icons/bs";
 const TodoItem = ({ id, title, completed }) => {
-const [isEditTodo, setİsEditTodo] = useState(false);
-const [newTodoText, setNewTodoText] = useState(title)
-const dispatch =useDispatch()
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedMessage, setEditedMessage] = useState(title);
+  const dispatch = useDispatch();
+  const inputRef = useRef(null);
 
-const handleCompletedClick=()=>{
-  dispatch(toggleComplete({id:id, completed:!completed}))
-}
-const handleDeleteClick =()=>{
-  dispatch(deleteTodo({id:id}))
-}
-const handleEditClick =()=>{
-  setİsEditTodo(true)
-}
-const handleSaveClick =()=>{
-  dispatch(editTodo({id, newText:newTodoText,completed}))
-  setİsEditTodo(false)
-}
-const handleInputChange=(e)=>{
-  setNewTodoText(e.target.value)
-}
-return (
+  const handleCompletedClick = () => {
+    dispatch(toggleComplete({ id: id, completed: !completed }));
+  };
 
-  <li className={` list-group-item ${completed && ' list-group-item-success '}`} >
-    <div className='d-flex justify-contant- between'> 
-      {
-      isEditTodo ?(
-        <span className='d-flex aling-items-center'>
-          <input
-          type='checkbox'
-          className='mr-3'
-          checked={completed}
-          onClick={handleCompletedClick}
-          /> <input
-          type='checkbox'
-          className='mr-3'
-          checked={newTodoText}
-          onClick={handleInputChange}
-          />
-        <FcApprove
-        onClick={handleSaveClick}
+  const handleDeleteClick = () => {
+    dispatch(deleteTodo({ id: id }));
+  };
 
-        />
-        <FcDisapprove
-        onClick={()=>setİsEditTodo(false)}
-        />
-      </span>
-      ):(
-        <span>
-          {title}
-          <BsFillPencilFill
-          onClick={handleEditClick}
-          />
-          <BsFillTrashFill
-          onClick={handleDeleteClick}
-          />
-        </span>
-      )
-      }
-    
-    </div>
+  const handleEditClick = () => {
+    setIsEditing(true);
+    focusInput();
+  };
 
-  </li>
-)
-}
+  const handleSaveClick = () => {
+    dispatch(editTodo({ id: id, newText: editedMessage, completed: completed }));
+    setIsEditing(false);
+  };
 
-export default TodoItem
+  const handleInputChange = (e) => {
+    setEditedMessage(e.target.value);
+    focusInput();
+  };
+
+  const focusInput = () => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
+  return (
+    <li className={`list-group-item ${completed && 'list-group-item-success'}`} style={{ padding: '10px' }}>
+      <div className='d-flex justify-content-between align-items-center'>
+        {isEditing ? (
+          <div className='d-flex align-items-center'>
+            <input
+              type='text'
+              value={editedMessage}
+              onChange={handleInputChange}
+              ref={inputRef}
+              className='form-control'
+            />
+            <BsCheck2 onClick={handleSaveClick} style={{fontSize:'20px', cursor: 'pointer', marginLeft: '10px' }} />
+            <BsXLg onClick={() => setIsEditing(false)} style={{fontSize:'20px', cursor: 'pointer' }} />
+          </div>
+        ) : (
+          <div>
+            <span>{editedMessage}</span>
+          </div>
+        )}
+        {!isEditing && (
+          <div className='d-flex align-items-center'>
+            <BsFillPencilFill onClick={handleEditClick} style={{fontSize:'20px', cursor: 'pointer', marginRight: '10px' }} />
+            <BsFillTrashFill onClick={handleDeleteClick} style={{fontSize:'20px', cursor: 'pointer' }} />
+          </div>
+        )}
+      
+      </div>
+    </li>
+  );
+};
+
+export default TodoItem;
